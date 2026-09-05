@@ -1,0 +1,371 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23ea580c'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23fffaf0' stroke-width='8'/%3E%3C/svg%3E" />
+  <title>ExpenseEase - Smart Expense Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-logo">&#8377;</div>
+        <div class="brand-text">
+          <h1>ExpenseEase</h1>
+          <p>Smart Expense Tracker</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard">
+          <span class="nav-icon">&#9672;</span> Dashboard
+        </button>
+        <button class="nav-item" data-view="transactions">
+          <span class="nav-icon">&#9776;</span> Transactions
+        </button>
+        <button class="nav-item" data-view="budget">
+          <span class="nav-icon">&#9670;</span> Budgets
+        </button>
+        <button class="nav-item" data-view="bank-sms">
+          <span class="nav-icon">&#9993;</span> Bank SMS Auto-Detect
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="ai-status">
+          <span class="ai-dot"></span> Naive Bayes AI Active
+        </div>
+        <button class="logout-btn" id="logoutBtn">Reset Data</button>
+      </div>
+    </aside>
+
+    <!-- Mobile header -->
+    <header class="mobile-header">
+      <button class="menu-btn" id="menuBtn">&#9776;</button>
+      <div class="brand-text">
+        <h1>ExpenseEase</h1>
+        <p>Smart Expense Tracker</p>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="main">
+
+      <!-- ======= DASHBOARD ======= -->
+      <section class="view active" id="view-dashboard">
+        <div class="view-header">
+          <h2>Dashboard</h2>
+          <p>Welcome back! Here is your financial overview.</p>
+        </div>
+
+        <div class="timeframe-controls">
+          <button class="tf-btn active" data-period="weekly">Weekly</button>
+          <button class="tf-btn" data-period="monthly">Monthly</button>
+          <button class="tf-btn" data-period="yearly">Yearly</button>
+        </div>
+
+        <div class="stats-grid" id="statCards">
+          <div class="stat-card">
+            <div class="stat-icon">&#9748;</div>
+            <h3>Total Income</h3>
+            <p class="stat-value income" id="statIncome">&#8377;0.00</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#8377;</div>
+            <h3>Total Expenses</h3>
+            <p class="stat-value expense" id="statExpense">&#8377;0.00</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#128181;</div>
+            <h3>Net Balance</h3>
+            <p class="stat-value balance" id="statBalance">&#8377;0.00</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#128221;</div>
+            <h3>Transactions</h3>
+            <p class="stat-value count" id="statCount">0</p>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="card-header">
+              <h3>Expense Breakdown</h3>
+              <p>By category for the selected period</p>
+            </div>
+            <div class="chart-wrap" id="pieChartWrap">
+              <canvas id="pieChart"></canvas>
+              <p class="empty-hint" id="pieEmptyHint">No expenses for this period yet</p>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="card-header">
+              <h3>Top Categories</h3>
+              <p>Where your money goes most</p>
+            </div>
+            <ul class="category-bars" id="categoryBars"></ul>
+            <p class="empty-hint" id="catEmptyHint">No data available yet</p>
+          </div>
+        </div>
+
+        <div class="recent-card">
+          <div class="card-header">
+            <h3>Recent Transactions</h3>
+            <button class="link-btn" data-goto="transactions">View all &rarr;</button>
+          </div>
+          <table class="data-table" id="recentTable">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th class="align-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody id="recentBody"></tbody>
+          </table>
+          <p class="empty-hint" id="recentEmptyHint">No transactions yet. Add your first expense!</p>
+        </div>
+      </section>
+
+      <!-- ======= TRANSACTIONS ======= -->
+      <section class="view" id="view-transactions">
+        <div class="view-header">
+          <h2>Transactions</h2>
+          <p>Add, edit and manage all your expenses and income.</p>
+        </div>
+
+        <div class="txn-add-card">
+          <form id="txnForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="txnType">Type</label>
+                <select id="txnType">
+                  <option value="expense">Expense</option>
+                  <option value="income">Income</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="txnAmount">Amount</label>
+                <input type="number" id="txnAmount" placeholder="0.00" min="0" step="0.01" required />
+              </div>
+              <div class="form-group">
+                <label for="txnCategory">Category</label>
+                <select id="txnCategory">
+                  <option value="food">Food &amp; Dining</option>
+                  <option value="transport">Transport</option>
+                  <option value="shopping">Shopping</option>
+                  <option value="utilities">Utilities</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="health">Health</option>
+                  <option value="housing">Housing / Rent</option>
+                  <option value="education">Education</option>
+                  <option value="travel">Travel</option>
+                  <option value="salary">Salary</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="txnDate">Date</label>
+                <input type="date" id="txnDate" required />
+              </div>
+              <div class="form-group form-group-wide">
+                <label for="txnNote">Description</label>
+                <input type="text" id="txnNote" placeholder="e.g. Grocery shopping at Tesco" required />
+              </div>
+              <div class="form-group">
+                <button type="submit" class="btn-primary" id="txnSubmitBtn">Add Transaction</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="filters-row">
+          <div class="search-box">
+            <input type="text" id="txnSearch" placeholder="Search transactions..." />
+          </div>
+          <div class="filter-group">
+            <select id="filterType">
+              <option value="all">All Types</option>
+              <option value="expense">Expenses</option>
+              <option value="income">Income</option>
+            </select>
+            <select id="filterCategory">
+              <option value="all">All Categories</option>
+              <option value="food">Food &amp; Dining</option>
+              <option value="transport">Transport</option>
+              <option value="shopping">Shopping</option>
+              <option value="utilities">Utilities</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="health">Health</option>
+              <option value="housing">Housing / Rent</option>
+              <option value="education">Education</option>
+              <option value="travel">Travel</option>
+              <option value="salary">Salary</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="recent-card">
+          <div class="card-header">
+            <h3>All Transactions</h3>
+            <span class="txn-count" id="txnCount">0 transactions</span>
+          </div>
+          <table class="data-table" id="allTable">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th class="align-right">Amount</th>
+                <th class="align-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="allBody"></tbody>
+          </table>
+          <p class="empty-hint" id="allEmptyHint">No transactions found.</p>
+        </div>
+      </section>
+
+      <!-- ======= BUDGET ======= -->
+      <section class="view" id="view-budget">
+        <div class="view-header">
+          <h2>Budgets</h2>
+          <p>Set spending limits per category and track your progress.</p>
+        </div>
+
+        <form id="budgetForm" class="budget-form">
+          <div class="form-group">
+            <label for="budgetCategory">Category</label>
+            <select id="budgetCategory">
+              <option value="food">Food &amp; Dining</option>
+              <option value="transport">Transport</option>
+              <option value="shopping">Shopping</option>
+              <option value="utilities">Utilities</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="health">Health</option>
+              <option value="housing">Housing / Rent</option>
+              <option value="education">Education</option>
+              <option value="travel">Travel</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="budgetAmount">Monthly Limit</label>
+            <input type="number" id="budgetAmount" placeholder="0.00" min="0" step="0.01" required />
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn-primary btn-sm">Set Budget</button>
+          </div>
+        </form>
+
+        <div class="budget-grid" id="budgetGrid"></div>
+        <p class="empty-hint" id="budgetEmptyHint">No budgets set yet. Set a monthly limit above.</p>
+      </section>
+
+      <!-- ======= BANK SMS AUTO-DETECT ======= -->
+      <section class="view" id="view-bank-sms">
+        <div class="view-header">
+          <h2>Bank SMS Auto-Detect</h2>
+          <p>Paste a bank SMS message and let Naive Bayes automatically classify the expense.</p>
+        </div>
+
+        <div class="ai-card">
+          <div class="ai-intro">
+            <div class="ai-icon">&#129302;</div>
+            <div>
+              <h3>Naive Bayes Classifier</h3>
+              <p>The AI reads your bank message and predicts the category plus whether it is an income or expense.</p>
+            </div>
+          </div>
+          <textarea id="smsInput" rows="4" placeholder="Example: A/c XX1234 debited Rs 250.00 on 05-09-2026 at SWIGGY order #4567. UPI: swiggy@ybl"></textarea>
+          <div class="sample-sms">
+            <button type="button" class="chip" data-sms="A/c XX1234 credited Rs 50000.00 on 01-09-2026 at SALARY. UPI: employer@bank">Sample Salary</button>
+            <button type="button" class="chip" data-sms="A/c XX1234 debited Rs 349.00 on 04-09-2026 at ZOMATO order #8910. UPI: zomato@paytm">Sample Food</button>
+            <button type="button" class="chip" data-sms="Rs 120.00 debited from A/c XX2345 for OLA ride on 02-09-2026. Ref 77889912">Sample Transport</button>
+          </div>
+          <button class="btn-primary btn-block" id="classifyBtn">&#129302; Classify Message</button>
+
+          <div class="ai-result" id="aiResult" hidden>
+            <h3>Classification Result</h3>
+            <div class="result-badges">
+              <span class="badge" id="aiTypeBadge"></span>
+              <span class="badge" id="aiCategoryBadge"></span>
+            </div>
+            <p class="ai-confidence">Confidence: <strong id="aiConfidence">--</strong></p>
+            <p class="ai-detail" id="aiDetail"></p>
+            <button class="btn-primary" id="addFromSmsBtn">Add as Expense</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="toastContainer" class="toast-container"></div>
+
+<!-- Modal for delete confirmation -->
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal">
+      <h3>Delete Transaction</h3>
+      <p>Are you sure you want to delete this transaction?</p>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="modalCancelBtn">Cancel</button>
+        <button class="btn-danger" id="modalConfirmBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for editing a transaction -->
+  <div class="modal-overlay" id="editModalOverlay" hidden>
+    <div class="modal">
+      <h3>Edit Transaction</h3>
+      <form id="editForm" class="modal-form">
+        <div class="form-group">
+          <label for="editType">Type</label>
+          <select id="editType">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editAmount">Amount</label>
+          <input type="number" id="editAmount" min="0" step="0.01" required />
+        </div>
+        <div class="form-group">
+          <label for="editCategory">Category</label>
+          <select id="editCategory"></select>
+        </div>
+        <div class="form-group">
+          <label for="editDate">Date</label>
+          <input type="date" id="editDate" required />
+        </div>
+        <div class="form-group wide">
+          <label for="editNote">Description</label>
+          <input type="text" id="editNote" required />
+        </div>
+      </form>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="editCancelBtn">Cancel</button>
+        <button class="btn-primary" id="editSaveBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-database-compat.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
